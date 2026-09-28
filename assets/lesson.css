@@ -1,0 +1,150 @@
+:root {
+  --paper: #f7f3eb;
+  --ink: #1c1916;
+  --muted: #5c564e;
+  --rule: #d4cdc0;
+  --accent: #8b3d2b;
+  --ok: #2d5a3d;
+  --bad: #8b3d2b;
+  --card: #fffdf8;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 19px; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  line-height: 1.55;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2rem; margin: 0 0 0.4rem; }
+h2 { font-size: 1.25rem; margin: 2.2rem 0 0.6rem; }
+h3 { font-size: 1.05rem; margin: 1.6rem 0 0.4rem; }
+
+.kicker {
+  color: var(--accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+
+.lede {
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin: 0 0 1.5rem;
+}
+
+p { margin: 0 0 1rem; }
+
+a { color: var(--accent); }
+
+.cite {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+ol, ul { margin: 0 0 1rem 1.2rem; padding: 0; }
+li { margin: 0 0 0.4rem; }
+
+code, kbd {
+  font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+}
+
+p code, li code, td code {
+  background: #efe8dc;
+  padding: 0.08em 0.32em;
+  border-radius: 3px;
+}
+
+pre {
+  background: #231f1b;
+  color: #f4efe6;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  border-radius: 4px;
+}
+
+pre code { background: none; color: inherit; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin: 0 0 1.2rem;
+}
+
+th, td {
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.45rem 0.4rem 0.45rem 0;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  padding: 1rem 1.1rem;
+  margin: 1.2rem 0;
+}
+
+.flow {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1.2rem 0 1.4rem;
+}
+
+.flow-step {
+  background: var(--card);
+  border-left: 3px solid var(--accent);
+  padding: 0.55rem 0.8rem;
+  font-size: 0.95rem;
+}
+
+.flow-step strong { display: block; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+
+.ask-teacher {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+nav.crumbs { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.6rem; }
+nav.crumbs a { color: var(--muted); }
+
+.quiz { margin: 1.2rem 0 1.8rem; }
+.quiz-q { font-weight: 600; margin-bottom: 0.6rem; }
+.quiz-opts { display: grid; gap: 0.45rem; }
+.quiz button {
+  font: inherit;
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+}
+.quiz button:hover { border-color: var(--ink); }
+.quiz button[data-state="right"] { border-color: var(--ok); background: #e8f3eb; }
+.quiz button[data-state="wrong"] { border-color: var(--bad); background: #f8ebe7; }
+.quiz-fb { min-height: 1.4em; margin-top: 0.5rem; font-size: 0.92rem; color: var(--muted); }

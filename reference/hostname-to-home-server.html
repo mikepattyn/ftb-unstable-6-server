@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hostname → home server</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <p class="kicker">Reference</p>
+    <h1>Hostname → home server</h1>
+    <p class="lede">The reusable recipe. Print this. Fill the blanks for the next service.</p>
+
+    <h2>What friends type</h2>
+    <table>
+      <thead>
+        <tr><th>App</th><th>They type</th><th>Not this</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Minecraft Java (port 25565)</td>
+          <td><code>name.example.nl</code></td>
+          <td><code>https://name.example.nl</code></td>
+        </tr>
+        <tr>
+          <td>Minecraft Java (other port)</td>
+          <td><code>name.example.nl</code> plus an SRV, or <code>name.example.nl:PORT</code></td>
+          <td>An A record that tries to include a port</td>
+        </tr>
+        <tr>
+          <td>Browser</td>
+          <td><code>https://name.example.nl</code></td>
+          <td>A hostname with no web server listening on 443</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>DNS record (this is the “URL” for Minecraft)</h2>
+    <pre><code>ftb-unstable.mikepattyn.nl.    300    IN    A    YOUR.PUBLIC.IPV4</code></pre>
+    <p class="cite">A record RDATA is only an IPv4 address — <a href="https://www.rfc-editor.org/rfc/rfc1035#section-3.4.1">RFC 1035 §3.4.1</a>. Wiki: point it at the <em>external</em> IP — <a href="https://minecraft.wiki/w/Tutorial:Setting_up_a_Java_Edition_server#A_record">Minecraft Wiki</a>.</p>
+
+    <h2>Panel fields</h2>
+    <table>
+      <thead><tr><th>Field</th><th>This server</th><th>Next service</th></tr></thead>
+      <tbody>
+        <tr><td>Type</td><td>A</td><td>A (or AAAA if IPv6 only)</td></tr>
+        <tr><td>Name / host</td><td><code>ftb-unstable</code></td><td>short label under <code>mikepattyn.nl</code></td></tr>
+        <tr><td>Value</td><td>router WAN IPv4</td><td>same WAN IPv4 unless the box is elsewhere</td></tr>
+        <tr><td>TTL</td><td>300 if the WAN IP moves</td><td>same</td></tr>
+        <tr><td>Proxy</td><td>off / DNS-only</td><td>on only for HTTP(S) — <a href="https://developers.cloudflare.com/dns/proxy-status/use-cases/">Cloudflare</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>The rest of the path (not DNS)</h2>
+    <ol>
+      <li>Router: WAN TCP (and UDP if needed) → Mac LAN IP, same port the app listens on.</li>
+      <li>Mac: DHCP reservation so the LAN IP does not drift.</li>
+      <li>Process: Docker publishes <code>25565:25565/tcp</code> on this host.</li>
+      <li>Firewall: allow inbound on that port.</li>
+    </ol>
+
+    <h2>Check</h2>
+    <pre><code>dig +short A ftb-unstable.mikepattyn.nl
+# must print YOUR.PUBLIC.IPV4
+# must not print 192.168.x.x / 10.x.x.x / 172.16–31.x.x / 100.64–127.x.x</code></pre>
+
+    <h2>Private and shared ranges</h2>
+    <p><a href="https://www.rfc-editor.org/rfc/rfc1918">RFC 1918</a> private: <code>10/8</code>, <code>172.16/12</code>, <code>192.168/16</code>. <a href="https://www.rfc-editor.org/rfc/rfc6598">RFC 6598</a> CGNAT: <code>100.64/10</code>. None of these belong in a public A record.</p>
+
+    <p><a href="../lessons/0001-hostname-is-not-a-url.html">Lesson 0001 — hostname is not a URL</a></p>
+  </main>
+</body>
+</html>

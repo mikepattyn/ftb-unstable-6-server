@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>0001 — A hostname is not a URL</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <nav class="crumbs"><a href="../MISSION.md">Mission</a> · <a href="../reference/hostname-to-home-server.html">Reference</a></nav>
+    <p class="kicker">Lesson 0001 · ~8 minutes</p>
+    <h1>A hostname is not a URL</h1>
+    <p class="lede">Friends will type <code>ftb-unstable.mikepattyn.nl</code>. That string is a DNS name. Minecraft is not a browser, so they must not type <code>https://…</code>.</p>
+
+    <h2>What you will be able to do</h2>
+    <p>Write the one DNS record that turns <code>ftb-unstable.mikepattyn.nl</code> into your home public IPv4 — and explain why the port is not part of that record.</p>
+
+    <h2>Two different strings</h2>
+    <p>A <strong>URL</strong> starts with a scheme. <code>https://mikepattyn.nl/about</code> tells a browser: use HTTPS, talk to that host, request that path. That grammar is <a href="https://www.rfc-editor.org/rfc/rfc3986">RFC 3986</a>.</p>
+    <p>A <strong>hostname</strong> is only the name: <code>ftb-unstable.mikepattyn.nl</code>. DNS looks it up and returns addresses. Minecraft’s server box wants a hostname (optionally <code>:port</code>). The Java wiki says players type the domain <em>in place of</em> the IP — not as a website. <span class="cite">[<a href="https://minecraft.wiki/w/Tutorial:Setting_up_a_Java_Edition_server#Connecting_a_domain_name_to_your_server">Minecraft Wiki</a>]</span></p>
+
+    <div class="panel">
+      <p style="margin:0"><strong>Give players:</strong> <code>ftb-unstable.mikepattyn.nl</code><br>
+      <strong>Do not give:</strong> <code>https://ftb-unstable.mikepattyn.nl</code> or a LAN address like <code>192.168.1.20</code>.</p>
+    </div>
+
+    <h2>The A record is the whole DNS job (on port 25565)</h2>
+    <p>An <strong>A record</strong> maps a name to one IPv4 address. The record’s data is four dotted decimals. There is no room for a port. <span class="cite">[<a href="https://www.rfc-editor.org/rfc/rfc1035#section-3.4.1">RFC 1035 §3.4.1</a>]</span></p>
+    <p>Your Compose file already publishes the Java default, TCP <code>25565</code>. The client uses that port when the player omits <code>:something</code>. So for this server you do <em>not</em> need an SRV record. SRV is how Java learns a <em>non-default</em> port from DNS. Save that for a later lesson. <span class="cite">[<a href="https://minecraft.wiki/w/Tutorial:Setting_up_a_Java_Edition_server#SRV_record">Wiki: SRV</a>, <a href="https://www.rfc-editor.org/rfc/rfc2782">RFC 2782</a>]</span></p>
+
+    <pre><code>; name                         ttl  class  type  address
+ftb-unstable.mikepattyn.nl.    300  IN     A     YOUR.PUBLIC.IPV4</code></pre>
+
+    <p>In a typical registrar panel:</p>
+    <table>
+      <thead><tr><th>Field</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Type</td><td><code>A</code></td></tr>
+        <tr><td>Name / host</td><td><code>ftb-unstable</code> (the label; the zone is already <code>mikepattyn.nl</code>)</td></tr>
+        <tr><td>IPv4 / content</td><td>the IPv4 on the <em>WAN</em> side of the router — the address the rest of the internet uses to reach your house</td></tr>
+        <tr><td>TTL</td><td><code>300</code> seconds if that WAN address can change</td></tr>
+      </tbody>
+    </table>
+    <p>The wiki is explicit: the A record answer is the server’s <em>external</em> IP, “usually after port forwarding.” <span class="cite">[<a href="https://minecraft.wiki/w/Tutorial:Setting_up_a_Java_Edition_server#A_record">Wiki: A record</a>]</span></p>
+
+    <h2>Why the public IP, not the MacBook’s</h2>
+    <p>Friends are not on your Wi-Fi. Their lookup must return an address routers on the public internet can deliver to. Addresses in <code>192.168.0.0/16</code>, <code>10.0.0.0/8</code>, and <code>172.16.0.0/12</code> are private; they are not globally reachable. <span class="cite">[<a href="https://www.rfc-editor.org/rfc/rfc1918">RFC 1918</a>]</span></p>
+    <p>Your existing port-forward is what takes a packet that arrived at the public IP and hands it to the Mac. DNS does not do that hop. DNS only answers “which IP is this name?”</p>
+
+    <div class="flow">
+      <div class="flow-step"><strong>1 · Name</strong>Player types <code>ftb-unstable.mikepattyn.nl</code></div>
+      <div class="flow-step"><strong>2 · DNS</strong>A record → <code>YOUR.PUBLIC.IPV4</code></div>
+      <div class="flow-step"><strong>3 · Port (client default)</strong>TCP 25565, unless they typed <code>:other</code></div>
+      <div class="flow-step"><strong>4 · Your router (already done)</strong>WAN 25565 → Mac LAN IP 25565</div>
+      <div class="flow-step"><strong>5 · Docker (already done)</strong>Host 25565 → container 25565</div>
+    </div>
+
+    <h2>Two traps that break “any service at home”</h2>
+    <p><strong>Orange cloud / “proxied” DNS.</strong> If the zone lives on Cloudflare (or a similar HTTP proxy), a proxied A record returns Cloudflare IPs and only forwards HTTP/HTTPS. Minecraft is raw TCP. The record must be DNS-only (gray cloud). <span class="cite">[<a href="https://developers.cloudflare.com/dns/proxy-status/use-cases/">Cloudflare: non-HTTP services</a>]</span></p>
+    <p><strong>WAN address in <code>100.64.0.0</code>–<code>100.127.255.255</code>.</strong> That block is ISP shared space (CGNAT). A record can still “work” as DNS, but inbound port-forwards on your router will not reach a unique public IP. <span class="cite">[<a href="https://www.rfc-editor.org/rfc/rfc6598">RFC 6598</a>]</span> You said the router is already forwarded; still glance at the WAN IP once.</p>
+
+    <h2>Skill: retrieve, don’t re-read</h2>
+    <p>Close the tables above in your head, then answer. Feedback is immediate.</p>
+
+    <div class="quiz" data-quiz data-ok="Yes. The server list wants a name or name:port, not a website." data-no="Minecraft is not a browser. Highlighted is the string that belongs in Add Server.">
+      <p class="quiz-q">1. What do you put in Minecraft’s server address?</p>
+      <div class="quiz-opts">
+        <button type="button" data-correct="false">https website address only</button>
+        <button type="button" data-correct="true">hostname or host:port pair</button>
+        <button type="button" data-correct="false">markdown link with scheme</button>
+      </div>
+      <p class="quiz-fb"></p>
+    </div>
+
+    <div class="quiz" data-quiz data-ok="The A record is the address the public internet routes to — the WAN IPv4." data-no="Private and Docker addresses are not reachable from a friend’s house.">
+      <p class="quiz-q">2. The A record IPv4 must be:</p>
+      <div class="quiz-opts">
+        <button type="button" data-correct="false">private IPv4 on LAN interface</button>
+        <button type="button" data-correct="true">public IPv4 on WAN interface</button>
+        <button type="button" data-correct="false">docker IPv4 on bridge network</button>
+      </div>
+      <p class="quiz-fb"></p>
+    </div>
+
+    <div class="quiz" data-quiz data-ok="Default Java port is 25565. An A record plus that default is enough." data-no="SRV is for a custom port. MX is mail. You do not need either for this Compose file.">
+      <p class="quiz-q">3. Java on 25565 needs which extra record?</p>
+      <div class="quiz-opts">
+        <button type="button" data-correct="true">No extra DNS record needed</button>
+        <button type="button" data-correct="false">An extra SRV record needed</button>
+        <button type="button" data-correct="false">An extra MX record needed</button>
+      </div>
+      <p class="quiz-fb"></p>
+    </div>
+
+    <h2>Do this once on your machine</h2>
+    <ol>
+      <li>On the router status page (or a “what is my IP” check from the Mac), copy the WAN IPv4. Reject it if it is RFC 1918 or <code>100.64/10</code>.</li>
+      <li>Open DNS for <code>mikepattyn.nl</code> (registrar or Cloudflare). Add the A record in the table above. If you see a proxy toggle, leave it off.</li>
+      <li>Wait a few minutes, then run:</li>
+    </ol>
+    <pre><code>dig +short A ftb-unstable.mikepattyn.nl</code></pre>
+    <p>You want that command to print the same public IPv4. The wiki’s check is the same idea with <code>dig</code> / <code>nslookup</code>. <span class="cite">[<a href="https://minecraft.wiki/w/Tutorial:Setting_up_a_Java_Edition_server#Verify_DNS_record">Wiki: verify</a>]</span></p>
+    <p>Then join from a network that is <em>not</em> your LAN (phone hotspot is fine) using only <code>ftb-unstable.mikepattyn.nl</code>.</p>
+
+    <h2>Primary source</h2>
+    <p>Read the short <strong>A record</strong> subsection of the Java server tutorial — especially “external IP” — then stop before SRV unless you are curious. <a href="https://minecraft.wiki/w/Tutorial:Setting_up_a_Java_Edition_server#A_record">minecraft.wiki — A record</a></p>
+
+    <h2>Keep</h2>
+    <p>The pocket card is <a href="../reference/hostname-to-home-server.html">Hostname → home server</a>. Next time the service is SSH, a second Minecraft port, or a website, you change the label and sometimes the port story — not the idea.</p>
+
+    <p class="ask-teacher">If any hop is fuzzy — “where do I click for <code>mikepattyn.nl</code>?”, “dig printed nothing”, “it works on LAN but not for friends” — ask in this chat. That is the point of having a teacher. Next lesson can be the NAT path or Dynamic DNS if your WAN IP moves.</p>
+  </main>
+  <script src="../assets/quiz.js"></script>
+</body>
+</html>
