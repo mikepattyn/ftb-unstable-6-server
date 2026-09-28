@@ -14,7 +14,7 @@ Docker Compose installs FTB Unstable 6 into a persistent Docker named volume. Th
    docker compose logs -f minecraft
    ```
 
-4. Wait for the server to finish installing and starting. Join with an FTB client running the **same modpack release**, using `<server-ip>:25565`. If friends connect over the internet, forward TCP 25565 to the Docker host and allow it through the host firewall. `MC_PORT` changes the host-side port.
+4. Wait for the server to finish installing and starting. Join with an FTB client running the **same modpack release**, using `<server-ip>:25565`. If friends connect over the internet, forward TCP 25565 to the Docker host and allow it through the host firewall. Compose publishes that port on the host.
 
 The first startup downloads the official FTB server files automatically. Everything under `/data` (the pack, configs, and world) lives in the Docker volume `ftb-unstable6-data`. `docker compose down` preserves it. **`docker compose down -v` deletes it.** No server downloads or world files belong in this Git repository.
 

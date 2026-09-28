@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 2m
     ports:
-      - "${MC_PORT:-25565}:25565/tcp"
+      - "25565:25565/tcp"
     environment:
       EULA: "${EULA:-FALSE}"
       TYPE: FTBA
