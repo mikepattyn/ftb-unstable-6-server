@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+server-data/
+backups/
+*.tar.gz
+*.zip

@@ -1,0 +1,14 @@
+# Local settings and private player lists
+.env
+.env.*
+!.env.example
+
+# If a bind mount is used in the future, keep generated server data out of Git.
+/server-data/
+/backups/
+*.tar.gz
+
+# Local editors and OS files
+.idea/
+.vscode/
+.DS_Store
